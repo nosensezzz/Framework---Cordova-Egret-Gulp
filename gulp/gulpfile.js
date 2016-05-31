@@ -5,6 +5,7 @@ connect = require('gulp-connect'), // runs a local dev server
 open = require('gulp-open'), // open a URL in web browser
 // browserify = require('browserify'), // bundles JS
 // source = require('vinyl-source-stream'), // Use conventianal text streams with Gulp
+ts = require('gulp-typescript'),
 
 config = {
 	port: 1109,
@@ -31,4 +32,10 @@ gulp.task('open', ['connect'], function () {
 		}));
 });
 
-gulp.task('default', ['open']);
+gulp.task('typescript', function() {
+  console.log('Compiling typescript');
+  return gulp.src(['../www/src/**/*.ts'])
+    .pipe(ts({module: 'commonjs'})).js.pipe(gulp.dest('../www/bin-debug'))
+});
+
+gulp.task('default', ['open', 'typescript']);
