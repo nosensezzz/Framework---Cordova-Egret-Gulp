@@ -1,0 +1,19 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "nosensezzz <nosensezzz@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "browserify": "^13.0.1",
+    "gulp": "^3.9.0",
+    "gulp-connect": "^2.2.0",
+    "gulp-open": "^1.0.0",
+    "jquery": "^2.2.4",
+    "vinyl-source-stream": "^1.1.0"
+  }
+}
