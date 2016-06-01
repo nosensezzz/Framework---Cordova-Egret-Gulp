@@ -1,229 +1,365 @@
-//////////////////////////////////////////////////////////////////////////////////////
-//
-//  Copyright (c) 2014-2015, Egret Technology Inc.
-//  All rights reserved.
-//  Redistribution and use in source and binary forms, with or without
-//  modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of the Egret nor the
-//       names of its contributors may be used to endorse or promote products
-//       derived from this software without specific prior written permission.
-//
-//  THIS SOFTWARE IS PROVIDED BY EGRET AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
-//  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-//  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-//  IN NO EVENT SHALL EGRET AND CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-//  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-//  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;LOSS OF USE, DATA,
-//  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-//  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-//  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-//////////////////////////////////////////////////////////////////////////////////////
-
-class Main extends egret.DisplayObjectContainer {
-
-    /**
-     * 加载进度界面
-     * Process interface loading
-     */
-    private loadingView:LoadingUI;
+class Main extends egret.DisplayObjectContainer 
+{
+	private BoardWidth:number = 30;
+	private BoardHeight:number = 30;
+	private Speed = 1000 / 20 ;
 
     public constructor() {
-        super();
-        this.addEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
-    }
+        super();   
 
-    private onAddToStage(event:egret.Event) {
-        //设置加载进度界面
-        //Config to load process interface
-        this.loadingView = new LoadingUI();
-        this.stage.addChild(this.loadingView);
-
-        //初始化Resource资源加载库
-        //initiate Resource loading library
-        RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, this.onConfigComplete, this);
-        RES.loadConfig("resource/default.res.json", "resource/");
-    }
-
-    /**
-     * 配置文件加载完成,开始预加载preload资源组。
-     * configuration file loading is completed, start to pre-load the preload resource group
-     */
-    private onConfigComplete(event:RES.ResourceEvent):void {
-        RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, this.onConfigComplete, this);
-        RES.addEventListener(RES.ResourceEvent.GROUP_COMPLETE, this.onResourceLoadComplete, this);
-        RES.addEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, this.onResourceLoadError, this);
-        RES.addEventListener(RES.ResourceEvent.GROUP_PROGRESS, this.onResourceProgress, this);
-        RES.addEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, this.onItemLoadError, this);
-        RES.loadGroup("preload");
-    }
-
-    /**
-     * preload资源组加载完成
-     * Preload resource group is loaded
-     */
-    private onResourceLoadComplete(event:RES.ResourceEvent):void {
-        if (event.groupName == "preload") {
-            this.stage.removeChild(this.loadingView);
-            RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, this.onResourceLoadComplete, this);
-            RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, this.onResourceLoadError, this);
-            RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS, this.onResourceProgress, this);
-            RES.removeEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, this.onItemLoadError, this);
-            this.createGameScene();
-        }
-    }
-
-    /**
-     * 资源组加载出错
-     *  The resource group loading failed
-     */
-    private onItemLoadError(event:RES.ResourceEvent):void {
-        console.warn("Url:" + event.resItem.url + " has failed to load");
-    }
-
-    /**
-     * 资源组加载出错
-     *  The resource group loading failed
-     */
-    private onResourceLoadError(event:RES.ResourceEvent):void {
-        //TODO
-        console.warn("Group:" + event.groupName + " has failed to load");
-        //忽略加载失败的项目
-        //Ignore the loading failed projects
-        this.onResourceLoadComplete(event);
-    }
-
-    /**
-     * preload资源组加载进度
-     * Loading process of preload resource group
-     */
-    private onResourceProgress(event:RES.ResourceEvent):void {
-        if (event.groupName == "preload") {
-            this.loadingView.setProgress(event.itemsLoaded, event.itemsTotal);
-        }
-    }
-
-    private textfield:egret.TextField;
-
-    /**
-     * 创建游戏场景
-     * Create a game scene
-     */
-    private createGameScene():void {
-        var sky:egret.Bitmap = this.createBitmapByName("bgImage");
-        this.addChild(sky);
-        var stageW:number = this.stage.stageWidth;
-        var stageH:number = this.stage.stageHeight;
-        sky.width = stageW;
-        sky.height = stageH;
-
-        var topMask = new egret.Shape();
-        topMask.graphics.beginFill(0x000000, 0.5);
-        topMask.graphics.drawRect(0, 0, stageW, 172);
-        topMask.graphics.endFill();
-        topMask.y = 33;
-        this.addChild(topMask);
-
-        var icon:egret.Bitmap = this.createBitmapByName("egretIcon");
-        this.addChild(icon);
-        icon.x = 26;
-        icon.y = 33;
-
-        var line = new egret.Shape();
-        line.graphics.lineStyle(2,0xffffff);
-        line.graphics.moveTo(0,0);
-        line.graphics.lineTo(0,117);
-        line.graphics.endFill();
-        line.x = 172;
-        line.y = 61;
-        this.addChild(line);
+        var 
+        self = this;
+        WIDTH = this.BoardWidth,
+        HEIGHT = this.BoardHeight;
 
 
-        var colorLabel = new egret.TextField();
-        colorLabel.textColor = 0xffffff;
-        colorLabel.width = stageW - 172;
-        colorLabel.textAlign = "center";
-        colorLabel.text = "Hello Egret";
-        colorLabel.size = 24;
-        colorLabel.x = 172;
-        colorLabel.y = 80;
-        this.addChild(colorLabel);
-
-        var textfield = new egret.TextField();
-        this.addChild(textfield);
-        textfield.alpha = 0;
-        textfield.width = stageW - 172;
-        textfield.textAlign = egret.HorizontalAlign.CENTER;
-        textfield.size = 24;
-        textfield.textColor = 0xffffff;
-        textfield.x = 172;
-        textfield.y = 135;
-        this.textfield = textfield;
-
-        //根据name关键字，异步获取一个json配置文件，name属性请参考resources/resource.json配置文件的内容。
-        // Get asynchronously a json configuration file according to name keyword. As for the property of name please refer to the configuration file of resources/resource.json.
-        RES.getResAsync("description", this.startAnimation, this)
-    }
-
-    /**
-     * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
-     * Create a Bitmap object according to name keyword.As for the property of name please refer to the configuration file of resources/resource.json.
-     */
-    private createBitmapByName(name:string):egret.Bitmap {
-        var result = new egret.Bitmap();
-        var texture:egret.Texture = RES.getRes(name);
-        result.texture = texture;
-        return result;
-    }
-
-    /**
-     * 描述文件加载成功，开始播放动画
-     * Description file loading is successful, start to play the animation
-     */
-    private startAnimation(result:Array<any>):void {
-        var self:any = this;
-
-        var parser = new egret.HtmlTextParser();
-        var textflowArr:Array<Array<egret.ITextElement>> = [];
-        for (var i:number = 0; i < result.length; i++) {
-            textflowArr.push(parser.parser(result[i]));
+        for(let i = 0; i < HEIGHT; i++){
+        	var newRow = [];
+        	for(let j = 0; j< WIDTH; j++){
+        		var r = new Rect(i, j, this.BoardWidth, this.BoardHeight);
+        		newRow.push(r);
+        		this.addChild(r);
+        	}
+        	this.row.push(newRow);
         }
 
-        var textfield = self.textfield;
-        var count = -1;
-        var change:Function = function () {
-            count++;
-            if (count >= textflowArr.length) {
-                count = 0;
-            }
-            var lineArr = textflowArr[count];
+        
+        // start game here
 
-            self.changeDescription(textfield, lineArr);
+        var snake = new Snake(this.row, this.BoardHeight, this.BoardWidth);
+        this.snake = snake;
+        // add listener
+        var
+        lb = new LeftButton(),
+        rb = new RightButton(),
+        restartBtn = new RestartBtn();
 
-            var tw = egret.Tween.get(textfield);
-            tw.to({"alpha": 1}, 200);
-            tw.wait(2000);
-            tw.to({"alpha": 0}, 200);
-            tw.call(change, self);
-        };
+        lb.touchEnabled = true;
+        this.addChild(lb);
+        lb.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onButtonClick.bind(null, this.snake), this);
+        rb.touchEnabled = true;
+        this.addChild(rb);
+        rb.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onButtonClick.bind(null, this.snake), this);
+		
+		restartBtn.touchEnabled = true;
+        this.addChild(restartBtn);
+        restartBtn.addEventListener(egret.TouchEvent.TOUCH_TAP, this.restart, this);
 
-        change();
+        this.interval = setInterval(function() {
+        	if(!self.snake.update()){ self.gameover(); }
+        }, this.Speed);
+
+        this.addEventListener("gameover", this.gameover, this);
+    }
+    private row: Array<Array> = [];
+    private snake: Snake = null;
+
+    public onButtonClick(snake: Snake, evt: egret.TouchEvent)
+    {
+    	evt.target.onClick(snake);
     }
 
-    /**
-     * 切换描述内容
-     * Switch to described content
-     */
-    private changeDescription(textfield:egret.TextField, textFlow:Array<egret.ITextElement>):void {
-        textfield.textFlow = textFlow;
+    public gameover(){
+    	clearInterval(this.interval);
+    }
+
+    public  restart(){
+    	var self = this;
+    	clearInterval(this.interval);
+
+    	this.snake.reborn(this.row, this.BoardHeight, this.BoardWidth);
+    	this.interval = setInterval(function() {
+        	if(!self.snake.update()){ self.gameover(); }
+        }, this.Speed);
     }
 }
 
+class Snake
+{
+	public constructor(row, maxY, maxX)
+	{
+        x = Math.round(Math.random(10,13)*(3)+10),
+        y = Math.round(Math.random(10,13)*(3)+10),
+        d = "right";
+		this._x	= x;
+		this._y = y;
+		this.maxX = maxX;
+		this.maxY = maxY;
+		this._d = d;
+		this.row = row;
 
+		this.head = row[this._x][this._y];
+		this.head.ToHead();
+		for(let i=2; i>0; i--)
+		{
+			row[this._x][this._y - i].ToTail();
+			this.tail.unshift(row[this._x][this._y - i]);
+		}
+		this.lastTail = this.tail[this.tail.length-1];
+	}
+
+	public reborn(row, maxY, maxX){
+		for(let i=0; i<this.tail.length-1; i++)
+		{
+			this.tail[i]?this.tail[i].ToNull():null;
+		}
+		this.lastTail?this.lastTail.ToNull():null;
+		this.head?this.head.ToNull():null;
+
+		var
+		x = Math.round(Math.random(10,13)*(3)+10),
+        y = Math.round(Math.random(10,13)*(3)+10),
+        d = "right";
+
+		this._x	= x;
+		this._y = y;
+		this.maxX = maxX;
+		this.maxY = maxY;
+		this._d = d;
+		this.row = row;
+
+		this.tail = [];
+		this.head = row[this._x][this._y];
+		this.head.ToHead();
+		for(let i=2; i>0; i--)
+		{
+			row[this._x][this._y - i].ToTail();
+			this.tail.unshift(row[this._x][this._y - i]);
+		}
+		this.lastTail = this.tail[this.tail.length-1];
+	}
+
+	private maxX:number = 0;
+	private maxY:number = 0;
+	private _x:number = 0;
+	private _y:number = 0;
+	private _d:string = '';
+	private row;
+
+	private.head:Rect;
+	private.lastTail:Rect;
+	private.lastAbandonedTail:Rect = null;
+	private.tail:array = [];
+	private.apple:Rect = null;
+
+	public update(){
+		if(!this.apple)
+		{	
+			var
+			x = Math.round(Math.random(0,this.maxX)*(this.maxX)+0),
+        	y = Math.round(Math.random(0,this.maxY)*(this.maxY)+0);
+
+        	if(this.row[x][y].isNull){
+        		this.row[x][y].ToApple();
+        	}
+
+        	this.apple = this.row[x][y];
+		}
+
+		this.lastTail.ToNull();
+		this.lastAbandonedTail = this.tail.pop();
+		this.lastTail = this.tail[this.tail.length - 1];
+		this.head.ToTail();
+		this.tail.unshift(this.head);
+		switch(this._d)
+		{
+			case "right":
+			this._y++;
+			break;
+			case "up":
+			this._x++;
+			break;
+			case "left":
+			this._y--;
+			break;
+			case "down":
+			this._x--;
+			break;
+			default:break;
+		}
+
+		if(!this.row[this._x] || !this.row[this._x][this._y])
+		{
+			return false;
+		} else {
+			this.head = this.row[this._x][this._y];
+			this.head.ToHead();
+			if(this.head == this.apple){
+				this.tail.push(this.lastAbandonedTail);
+				this.apple = null;
+			}
+			return true;
+		}	
+	}
+
+	public setLeft()
+	{
+		switch(this._d){
+			case "right":
+			this._d = "up";
+			break;
+			case "up":
+			this._d = "left";
+			break;
+			case "left":
+			this._d = "down";
+			break;
+			case "down":
+			this._d = "right";
+			break;
+			default:break;
+		}
+	}
+
+	public setRight()
+	{
+		switch(this._d){
+			case "right":
+			this._d = "down";
+			break;
+			case "down":
+			this._d = "left";
+			break;
+			case "left":
+			this._d = "up";
+			break;
+			case "up":
+			this._d = "right";
+			break;
+			default:break;
+		}
+	}
+}
+
+class Rect extends egret.Sprite
+{
+	public constructor(i, j, maxX, maxY)
+	{
+		super();
+
+		this._row = i;
+		this._col = j;
+
+		this.maxX = maxX;
+		this.maxY = maxY;
+
+		this.draw(i, j);
+	}
+
+	private draw(i, j)
+	{
+		this.width = egret.MainContext.instance.stage.stageWidth / this.maxX;
+		this.height = egret.MainContext.instance.stage.stageWidth / this.maxY;
+		this.graphics.lineStyle(1, 0xff1111 );
+        this.graphics.beginFill( this._color );
+        this.graphics.drawRect( j*this.width, i*this.height, this.width, this.height);
+        this.graphics.endFill();
+	}
+
+	private _row:number = 0;
+	private _col:number = 0;
+
+	private maxX:number = 0;
+	private maxY:number = 0;
+
+	private isNull:boolean = true;
+	private colorType:array = [0xffffff, 0x888eee, 0xff1111, 0x666666];
+	private _color = this.colorType[0];
+
+	public ToTail()
+	{
+		this.isNull = false;
+		this._color = this.colorType[1];
+		this.draw(this._row, this._col);
+	}
+
+	public ToHead()
+	{
+		this.isNull = false;
+		this._color = this.colorType[2];
+		this.draw(this._row, this._col);
+	}
+
+	public ToNull()
+	{
+		this.isNull = true;
+		this._color = this.colorType[0];
+		this.draw(this._row, this._col);
+	}
+
+	public ToApple()
+	{
+		this.isNull = false;
+		this._color = this.colorType[3];
+		this.draw(this._row, this._col);
+	}
+}
+
+class LeftButton extends egret.Sprite
+{
+	public constructor()
+	{
+		super();
+		this.draw();
+	}
+
+	private draw()
+	{
+		this.width = egret.MainContext.instance.stage.stageWidth / 2;
+		this.height = egret.MainContext.instance.stage.stageWidth / 2;
+		this.graphics.lineStyle(5, 0xff1111 );
+        this.graphics.beginFill( this.color );
+        this.graphics.drawRect( 0, egret.MainContext.instance.stage.stageWidth, this.width, this.height);
+        this.graphics.endFill();
+	}
+
+	private color = 0xeeeeee;
+
+	public onClick(snake)
+	{
+		snake.setLeft();
+	}
+}
+
+class RightButton extends egret.Sprite
+{
+	public constructor()
+	{
+		super();
+		this.draw();
+	}
+
+	private draw()
+	{
+		this.width = egret.MainContext.instance.stage.stageWidth / 2;
+		this.height = egret.MainContext.instance.stage.stageWidth / 2;
+		this.graphics.lineStyle(5, 0xff1111 );
+        this.graphics.beginFill( 0xeeeeee );
+        this.graphics.drawRect( egret.MainContext.instance.stage.stageWidth / 2, egret.MainContext.instance.stage.stageWidth, this.width, this.height);
+        this.graphics.endFill();
+	}
+
+	public onClick(snake)
+	{
+		snake.setRight();
+	}
+}
+
+class RestartBtn extends egret.Sprite
+{
+	public constructor()
+	{
+		super();
+		this.draw();
+	}
+
+	private draw()
+	{
+		this.width = egret.MainContext.instance.stage.stageWidth;
+		this.height = egret.MainContext.instance.stage.stageWidth / 10;
+		this.graphics.lineStyle(5, 0xff1111 );
+        this.graphics.beginFill( 0xeeeeee );
+        this.graphics.drawRect( 0, egret.MainContext.instance.stage.stageWidth * 3 / 2, this.width, this.height);
+        this.graphics.endFill();
+	}
+}

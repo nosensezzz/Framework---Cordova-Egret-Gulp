@@ -1,198 +1,148 @@
-//////////////////////////////////////////////////////////////////////////////////////
-//
-//  Copyright (c) 2014-2015, Egret Technology Inc.
-//  All rights reserved.
-//  Redistribution and use in source and binary forms, with or without
-//  modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of the Egret nor the
-//       names of its contributors may be used to endorse or promote products
-//       derived from this software without specific prior written permission.
-//
-//  THIS SOFTWARE IS PROVIDED BY EGRET AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
-//  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-//  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-//  IN NO EVENT SHALL EGRET AND CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-//  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-//  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;LOSS OF USE, DATA,
-//  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-//  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-//  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-//////////////////////////////////////////////////////////////////////////////////////
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
         _super.call(this);
-        this.addEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
-    }
-    var d = __define,c=Main,p=c.prototype;
-    p.onAddToStage = function (event) {
-        //设置加载进度界面
-        //Config to load process interface
-        this.loadingView = new LoadingUI();
-        this.stage.addChild(this.loadingView);
-        //初始化Resource资源加载库
-        //initiate Resource loading library
-        RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, this.onConfigComplete, this);
-        RES.loadConfig("resource/default.res.json", "resource/");
-    };
-    /**
-     * 配置文件加载完成,开始预加载preload资源组。
-     * configuration file loading is completed, start to pre-load the preload resource group
-     */
-    p.onConfigComplete = function (event) {
-        RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, this.onConfigComplete, this);
-        RES.addEventListener(RES.ResourceEvent.GROUP_COMPLETE, this.onResourceLoadComplete, this);
-        RES.addEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, this.onResourceLoadError, this);
-        RES.addEventListener(RES.ResourceEvent.GROUP_PROGRESS, this.onResourceProgress, this);
-        RES.addEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, this.onItemLoadError, this);
-        RES.loadGroup("preload");
-    };
-    /**
-     * preload资源组加载完成
-     * Preload resource group is loaded
-     */
-    p.onResourceLoadComplete = function (event) {
-        if (event.groupName == "preload") {
-            this.stage.removeChild(this.loadingView);
-            RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, this.onResourceLoadComplete, this);
-            RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, this.onResourceLoadError, this);
-            RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS, this.onResourceProgress, this);
-            RES.removeEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, this.onItemLoadError, this);
-            this.createGameScene();
-        }
-    };
-    /**
-     * 资源组加载出错
-     *  The resource group loading failed
-     */
-    p.onItemLoadError = function (event) {
-        console.warn("Url:" + event.resItem.url + " has failed to load");
-    };
-    /**
-     * 资源组加载出错
-     *  The resource group loading failed
-     */
-    p.onResourceLoadError = function (event) {
-        //TODO
-        console.warn("Group:" + event.groupName + " has failed to load");
-        //忽略加载失败的项目
-        //Ignore the loading failed projects
-        this.onResourceLoadComplete(event);
-    };
-    /**
-     * preload资源组加载进度
-     * Loading process of preload resource group
-     */
-    p.onResourceProgress = function (event) {
-        if (event.groupName == "preload") {
-            this.loadingView.setProgress(event.itemsLoaded, event.itemsTotal);
-        }
-    };
-    /**
-     * 创建游戏场景
-     * Create a game scene
-     */
-    p.createGameScene = function () {
-        var sky = this.createBitmapByName("bgImage");
-        this.addChild(sky);
-        var stageW = this.stage.stageWidth;
-        var stageH = this.stage.stageHeight;
-        sky.width = stageW;
-        sky.height = stageH;
-        var topMask = new egret.Shape();
-        topMask.graphics.beginFill(0x000000, 0.5);
-        topMask.graphics.drawRect(0, 0, stageW, 172);
-        topMask.graphics.endFill();
-        topMask.y = 33;
-        this.addChild(topMask);
-        var icon = this.createBitmapByName("egretIcon");
-        this.addChild(icon);
-        icon.x = 26;
-        icon.y = 33;
-        var line = new egret.Shape();
-        line.graphics.lineStyle(2, 0xffffff);
-        line.graphics.moveTo(0, 0);
-        line.graphics.lineTo(0, 117);
-        line.graphics.endFill();
-        line.x = 172;
-        line.y = 61;
-        this.addChild(line);
-        var colorLabel = new egret.TextField();
-        colorLabel.textColor = 0xffffff;
-        colorLabel.width = stageW - 172;
-        colorLabel.textAlign = "center";
-        colorLabel.text = "Hello Egret";
-        colorLabel.size = 24;
-        colorLabel.x = 172;
-        colorLabel.y = 80;
-        this.addChild(colorLabel);
-        var textfield = new egret.TextField();
-        this.addChild(textfield);
-        textfield.alpha = 0;
-        textfield.width = stageW - 172;
-        textfield.textAlign = egret.HorizontalAlign.CENTER;
-        textfield.size = 24;
-        textfield.textColor = 0xffffff;
-        textfield.x = 172;
-        textfield.y = 135;
-        this.textfield = textfield;
-        //根据name关键字，异步获取一个json配置文件，name属性请参考resources/resource.json配置文件的内容。
-        // Get asynchronously a json configuration file according to name keyword. As for the property of name please refer to the configuration file of resources/resource.json.
-        RES.getResAsync("description", this.startAnimation, this);
-    };
-    /**
-     * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
-     * Create a Bitmap object according to name keyword.As for the property of name please refer to the configuration file of resources/resource.json.
-     */
-    p.createBitmapByName = function (name) {
-        var result = new egret.Bitmap();
-        var texture = RES.getRes(name);
-        result.texture = texture;
-        return result;
-    };
-    /**
-     * 描述文件加载成功，开始播放动画
-     * Description file loading is successful, start to play the animation
-     */
-    p.startAnimation = function (result) {
-        var self = this;
-        var parser = new egret.HtmlTextParser();
-        var textflowArr = [];
-        for (var i = 0; i < result.length; i++) {
-            textflowArr.push(parser.parser(result[i]));
-        }
-        var textfield = self.textfield;
-        var count = -1;
-        var change = function () {
-            count++;
-            if (count >= textflowArr.length) {
-                count = 0;
+        this.row = [];
+        var WIDTH = 20, HEIGHT = 20;
+        for (var i = 0; i < HEIGHT; i++) {
+            var newRow = [];
+            for (var j = 0; j < WIDTH; j++) {
+                var r = new Rect(i, j);
+                newRow.push(r);
+                this.addChild(r);
             }
-            var lineArr = textflowArr[count];
-            self.changeDescription(textfield, lineArr);
-            var tw = egret.Tween.get(textfield);
-            tw.to({ "alpha": 1 }, 200);
-            tw.wait(2000);
-            tw.to({ "alpha": 0 }, 200);
-            tw.call(change, self);
-        };
-        change();
-    };
-    /**
-     * 切换描述内容
-     * Switch to described content
-     */
-    p.changeDescription = function (textfield, textFlow) {
-        textfield.textFlow = textFlow;
+            this.row.push(newRow);
+        }
+        var lb = new LeftButton(), rb = new RightButton();
+        this.addChild(lb);
+        this.addChild(rb);
+        lb.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onButtonClick, this);
+        rb.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onButtonClick, this);
+        // start game here
+        var posX = Math.round(Math.random(10, 13) * (3) + 10), posY = Math.round(Math.random(10, 13) * (3) + 10), Direction = "right";
+        var snake = new Snake(posX, posY, Direction, this.row);
+        // add listener
+        setInterval(function () {
+            snake.update();
+        }, 1000);
+    }
+    Main.prototype.onButtonClick = function (evt) {
+        console.log(evt.target);
+        evt.target.onClick();
     };
     return Main;
 }(egret.DisplayObjectContainer));
-egret.registerClass(Main,'Main');
+var Snake = (function () {
+    function Snake(x, y, d, row) {
+        this._x = 0;
+        this._y = 0;
+        this._d = '';
+        this.tail = [];
+        this._x = x;
+        this._y = y;
+        this._d = d;
+        this.row = row;
+        this.head = row[this._x][this._y];
+        this.head.ToHead();
+        for (var i = 2; i > 0; i--) {
+            row[this._x][this._y - i].ToTail();
+            this.tail.unshift(row[this._x][this._y - i]);
+        }
+        this.lastTail = this.tail[this.tail.length - 1];
+    }
+    Snake.prototype.update = function () {
+        this.lastTail.ToNull();
+        this.tail.pop();
+        this.lastTail = this.tail[this.tail.length - 1];
+        this.head.ToTail();
+        this.tail.unshift(this.head);
+        switch (this._d) {
+            case "right":
+                this._y++;
+                this.head = this.row[this._x][this._y];
+                this.head.ToHead();
+                break;
+            default: break;
+        }
+    };
+    return Snake;
+}());
+var Rect = (function (_super) {
+    __extends(Rect, _super);
+    function Rect(i, j) {
+        _super.call(this);
+        this._row = 0;
+        this._col = 0;
+        this.colorType = [0xffffff, 0x888eee, 0xff1111];
+        this._color = this.colorType[0];
+        this._row = i;
+        this._col = j;
+        this.draw(i, j);
+    }
+    Rect.prototype.draw = function (i, j) {
+        this.width = egret.MainContext.instance.stage.stageWidth / 20;
+        this.height = egret.MainContext.instance.stage.stageWidth / 20;
+        this.graphics.lineStyle(1, 0xff1111);
+        this.graphics.beginFill(this._color);
+        this.graphics.drawRect(j * this.width, i * this.height, this.width, this.height);
+        this.graphics.endFill();
+    };
+    Rect.prototype.ToTail = function () {
+        this._color = this.colorType[1];
+        this.draw(this._row, this._col);
+    };
+    Rect.prototype.ToHead = function () {
+        this._color = this.colorType[2];
+        this.draw(this._row, this._col);
+    };
+    Rect.prototype.ToNull = function () {
+        this._color = this.colorType[0];
+        this.draw(this._row, this._col);
+    };
+    return Rect;
+}(egret.Sprite));
+var LeftButton = (function (_super) {
+    __extends(LeftButton, _super);
+    function LeftButton() {
+        _super.call(this);
+        this.draw();
+    }
+    LeftButton.prototype.draw = function () {
+        this.width = egret.MainContext.instance.stage.stageWidth / 2;
+        this.height = egret.MainContext.instance.stage.stageWidth / 2;
+        this.graphics.lineStyle(5, 0xff1111);
+        this.graphics.beginFill(0xeeeeee);
+        this.graphics.drawRect(0, egret.MainContext.instance.stage.stageWidth, this.width, this.height);
+        this.graphics.endFill();
+    };
+    LeftButton.prototype.onClick = function () {
+        console.log("left");
+        this.dispatchEventWith("left");
+    };
+    return LeftButton;
+}(egret.Sprite));
+var RightButton = (function (_super) {
+    __extends(RightButton, _super);
+    function RightButton() {
+        _super.call(this);
+        this.draw();
+    }
+    RightButton.prototype.draw = function () {
+        this.width = egret.MainContext.instance.stage.stageWidth / 2;
+        this.height = egret.MainContext.instance.stage.stageWidth / 2;
+        this.graphics.lineStyle(5, 0xff1111);
+        this.graphics.beginFill(0xeeeeee);
+        this.graphics.drawRect(egret.MainContext.instance.stage.stageWidth / 2, egret.MainContext.instance.stage.stageWidth, this.width, this.height);
+        this.graphics.endFill();
+    };
+    RightButton.prototype.onClick = function () {
+        console.log("right");
+        this.dispatchEventWith("right");
+    };
+    return RightButton;
+}(egret.Sprite));
